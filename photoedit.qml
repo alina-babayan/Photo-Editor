@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.15
 import QtQuick.Dialogs
 
 ApplicationWindow {
+    id: root
     visible: true
     width: 1000
     height: 600
@@ -13,6 +14,27 @@ ApplicationWindow {
 
     ListModel {
         id: imageModel
+    }
+
+    function deleteImage(removedPath) {
+        var realIndex = -1
+        for (var i = 0; i < imageModel.count; i++) {
+            if (imageModel.get(i).path === removedPath) {
+                realIndex = i
+                break
+            }
+        }
+        if (realIndex === -1)
+            return
+        var wasCurrent = (img.source.toString() === removedPath.toString())
+        imageModel.remove(realIndex)
+        if (wasCurrent) {
+            if (imageModel.count > 0) {
+                img.source = imageModel.get(Math.min(realIndex, imageModel.count - 1)).path
+            } else {
+                img.source = ""
+            }
+        }
     }
 
     ColumnLayout {
@@ -217,26 +239,7 @@ ApplicationWindow {
 
                                 MouseArea {
                                     anchors.fill: parent
-                                    onClicked: {
-                                        var removedIndex = index
-                                        var removedPath = imageModel.get(index).path
-                                        var currentPath = img.source
-
-                                        imageModel.remove(index)
-
-                                        if (removedPath.toString() === currentPath.toString()) {
-
-                                            if (imageModel.count > 0) {
-                                                var newIndex = removedIndex - 1
-                                                if (newIndex < 0)
-                                                    newIndex = 0
-
-                                                img.source = imageModel.get(newIndex).path
-                                            } else {
-                                                img.source = ""
-                                            }
-                                        }
-                                    }
+                                    onClicked: root.deleteImage(model.path)
                                 }
                             }
                         }
